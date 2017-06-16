@@ -1,0 +1,24 @@
+<#import "../layout/defaultLayout.ftl.html" as layout> 
+<@layout.myLayout "Home page">    
+
+
+<h1>${i18n("dialogue")}</h1>
+
+<div class="dialogue">
+    <#list messages?reverse as item>
+    <div class="talk-bubble ${['tri-right', 'own'][item_index % 2]} round right-top">
+            <div class="talktext">
+                <p>
+                    ${item}
+                </p>
+            </div>
+        </div>
+    </#list>
+</div>
+
+<form class="input" action="/dialogue" method="post">
+    Chat: <input type="text" name="text" autofocus>
+    <input type="submit" value="Send">
+</form>
+
+</@layout.myLayout>

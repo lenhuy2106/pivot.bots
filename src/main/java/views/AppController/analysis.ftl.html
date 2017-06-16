@@ -1,0 +1,99 @@
+<#import "../layout/defaultLayout.ftl.html" as layout> 
+<@layout.myLayout "Home page">    
+
+
+<h1>${i18n("analysis")}</h1>
+
+<div class="container">
+    <p>You are</p>
+    
+    <ul>
+        <#list counter?keys as category>
+        <!-- debug -->
+        <!--<p>${counter[category]}</p>-->
+        <!--<p>${sum}</p>-->
+        <li>${((counter[category] / sum) * 100)?floor}% ${category} </li>
+        </#list>
+    </ul>
+    
+    <div class="charts">
+        <div class="pie" data-start="0" data-value="30"></div>
+        <div class="pie highlight" data-start="30" data-value="30"></div>
+        <div class="pie" data-start="60" data-value="40"></div>
+        <div class="pie big" data-start="100" data-value="260"></div>
+    </div>
+    
+    <div id="toc">
+        <h2>Table of Content</h2>
+        <ul>
+            <li><a href="#questions-answered">questions answered</a>: The <b>questions</b> you answered.</li>
+            <li><a href="#questions-unanswered">questions unanswered</a>: The non-generated* <b>questions</b> the bot has left.</li>
+            <li><a href="#words-used">words used: </a> Your <b>words</b> the bot recognized until now.</li>
+            <li><a href="#all-words">all words (vocabulary)</a>: All <b>words</b> the bot knows.</li>
+        </ul>
+        <p><b>*</b>There are more questions available due word-based generation.</p>
+    </div>
+    
+    <h2 id="questions-answered">questions answered</h2>
+        <#list questions?keys as category>
+        <h4>${category}</h4> 
+        <table class="table table-striped">
+            <tbody>
+                <#list questionsAnswered[category] as subquestions>
+                <tr>
+                    <td>${subquestions}</td>
+                </tr>
+                </#list>
+            </tbody>
+        </table>
+    </#list>
+    
+    <h2 id="questions-unanswered">questions unanswered</h2>
+        <#list questions?keys as category>
+        <h4>${category}</h4> 
+        <table class="table table-striped">
+            <tbody>
+                <#list questions[category] as subquestions>
+                <tr>
+                    <td>${subquestions}</td>
+                </tr>
+                </#list>
+            </tbody>
+        </table>
+        </#list>
+        
+        <h2 id="words-used">words used</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Word</th>
+                    <th>Sentiment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <#list sentiments?keys as word>
+                <tr>
+                    <td>${word}</td>
+                    <td>${sentiments[word]}</td>
+                </tr>
+                </#list>
+            </tbody>
+        </table>
+
+        <h2 id="all-words">all words (vocabulary)</h2>
+        <#list words?keys as category>
+        <h4>${category}</h4> 
+        <table class="table table-striped">
+            <tbody>
+                <#list words[category] as subwords>
+                <tr>
+                    <td>${subwords}</td>
+                </tr>
+                </#list>
+            </tbody>
+        </table>
+        </#list>
+        
+</div>
+
+</@layout.myLayout>
