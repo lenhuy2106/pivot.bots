@@ -13,12 +13,14 @@ public class Routes implements ApplicationRoutes {
     public void init(Router router) {  
         
         router.GET().route("/").with(AppController::index);
-        router.GET().route("/training").with(AppController::training);
-        router.POST().route("/trainingExec").with(AppController::trainingExec);
+        router.GET().route("/learning").with(AppController::learning);
+        router.POST().route("/learningStart").with(AppController::learningStart);
         router.GET().route("/dialogue").with(AppController::dialogue);
         router.POST().route("/dialogue").with(AppController::dialogue);
         router.GET().route("/analysis").with(AppController::analysis);
- 
+        router.GET().route("/settings").with(AppController::settings);
+        router.POST().route("/settings").with(AppController::settings);
+        
         ///////////////////////////////////////////////////////////////////////
         // Assets (pictures / javascript)
         ///////////////////////////////////////////////////////////////////////    
@@ -30,5 +32,5 @@ public class Routes implements ApplicationRoutes {
         ///////////////////////////////////////////////////////////////////////
         router.GET().route("/.*").with(AppController::index);
     }
-
+    
 }

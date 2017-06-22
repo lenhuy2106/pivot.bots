@@ -18,5 +18,4 @@ public interface Database {
     public int loadInt(String property, int defVal) throws IOException;
     public String loadString(String property, String defVal) throws IOException;
     public <T extends Collection> T loadCollection(String property, T defVal) throws IOException;
-        
 }

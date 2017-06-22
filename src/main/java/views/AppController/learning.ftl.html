@@ -1,0 +1,47 @@
+<#import "../layout/defaultLayout.ftl.html" as layout> 
+<@layout.myLayout "Home page">    
+
+
+<h1>${i18n("learning")} <span class="glyphicon glyphicon-heart"></span></h1>
+<p>${i18n("learning.description")}</p>
+
+<form action="/learningStart" method="post">
+    <div class="form-group">
+    <table class="form">
+        <tr>
+            <td>
+                <label for="category">Category:</label>
+                <select class="form-control" name="category">
+                    <#list categories as category>
+                    <option value="${category}">${category}</option>
+                    </#list>
+                </select>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <label for="corpus">Corpus:</label>
+                <textarea class="form-control" name="corpus" rows="20" cols="50"></textarea>
+            </td>
+            <td>
+                <p class="learning-example">
+                    Example (Front-End):
+                    <br><br>${i18n("learning.example")}
+                    <br><br>
+                    
+                    From: <a href="https://www.techopedia.com/definition/29569/front-end-developer">https://www.techopedia.com/definition/29569/front-end-developer</a>
+                </p>
+            </td>
+    </tr>
+
+    </table>
+
+    <button class="btn btn-primary" type="submit">Learn</button>
+    
+    </div>
+
+</form>
+
+
+</@layout.myLayout>

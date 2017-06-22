@@ -5,13 +5,13 @@ package models;
  *
  * @author T500
  */
-public class Training {
+public class Learning {
     
     private String corpus;
     
     private Category category;
 
-    public Training() {
+    public Learning() {
     }
 
     public String getCorpus() {
@@ -32,7 +32,7 @@ public class Training {
 
     @Override
     public String toString() {
-        return "Training{" + "corpus=" + corpus.substring(0, 50) + "..., category=" + category + '}';
+        return "Learning{" + "corpus=" + corpus.substring(0, 50) + "..., category=" + category + '}';
     }
     
 }

@@ -1,35 +1,101 @@
 <#import "../layout/defaultLayout.ftl.html" as layout> 
 <@layout.myLayout "Home page">    
 
-
-<h1>${i18n("analysis")}</h1>
+<h1>${i18n("analysis")} <span class="glyphicon glyphicon-signal"></span></h1>
+<p>${i18n("analysis.description")}</p>
 
 <div class="container">
-    <p>You are</p>
+    <h3>You are</h3>
     
     <ul>
-        <#list counter?keys as category>
         <!-- debug -->
+        <#list counter?keys as category>
         <!--<p>${counter[category]}</p>-->
         <!--<p>${sum}</p>-->
         <li>${((counter[category] / sum) * 100)?floor}% ${category} </li>
         </#list>
     </ul>
+    <p>${((usedPotential / botPotential) * 100)?floor}% of the bot's potential was used.</p>
     
-    <div class="charts">
-        <div class="pie" data-start="0" data-value="30"></div>
-        <div class="pie highlight" data-start="30" data-value="30"></div>
-        <div class="pie" data-start="60" data-value="40"></div>
-        <div class="pie big" data-start="100" data-value="260"></div>
+    <div class="chart">
+        <canvas id="potential-bar"></canvas>
     </div>
+    <div class="chart">
+        <canvas id="assess-doughnut"></canvas>
+    </div>
+    
+    <script>
+        new Chart(document.getElementById("assess-doughnut"),{
+            "type":"doughnut",
+            "data":{
+                "labels": [
+                            <#list counter?keys as category>
+                                "${category}",
+                            </#list>
+                ],
+                "datasets":[{
+                        "data":[
+                            <#list counter?keys as category>
+                                ${((counter[category] / sum) * 100)?floor},
+                            </#list>
+                        ],
+//                      TODO generate colors per category
+                        "backgroundColor":[
+                            "rgb(255, 99, 132)",
+                            "rgb(54, 162, 235)",
+                        ],
+                        "borderWidth": 0
+
+                    }]
+            }
+        });
+    </script>
+    
+    <script>
+        new Chart(document.getElementById("potential-bar"),{
+            "type":"bar",
+            options: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: 'Dataset'
+                }
+            },
+            "data":{
+                "labels": [
+                            <#list counter?keys as category>
+                                "${category}",
+                            </#list>
+                            "Unknown"
+                ],
+                "datasets":[{
+                        "label":"Dataset",
+                        "data":[
+                            <#list counter?keys as category>
+                                ${counter[category]},
+                            </#list>
+                            ${botPotential-usedPotential}
+
+                        ],
+//                      TODO generate colors per category
+                        "backgroundColor":[
+                            "rgb(255, 99, 132)",
+                            "rgb(54, 162, 235)",
+                            "rgb(0, 0, 0)",
+                        ],
+                        "borderWidth": 0
+                    }]
+            }
+        });
+    </script>
     
     <div id="toc">
         <h2>Table of Content</h2>
         <ul>
-            <li><a href="#questions-answered">questions answered</a>: The <b>questions</b> you answered.</li>
-            <li><a href="#questions-unanswered">questions unanswered</a>: The non-generated* <b>questions</b> the bot has left.</li>
-            <li><a href="#words-used">words used: </a> Your <b>words</b> the bot recognized until now.</li>
-            <li><a href="#all-words">all words (vocabulary)</a>: All <b>words</b> the bot knows.</li>
+            <li><a href="#questions-answered"><b>questions answered</b></a> <br>The questions you answered.</li>
+            <li><a href="#questions-unanswered"><b>questions unanswered</b></a> <br>The non-generated* questions the bot has left.</li>
+            <li><a href="#words-used"><b>words used</b></a> <br>Your words the bot recognized until now.</li>
+            <li><a href="#all-words"><b>all words (vocabulary)</b></a> <br>All words the bot knows.</li>
         </ul>
         <p><b>*</b>There are more questions available due word-based generation.</p>
     </div>
@@ -48,7 +114,7 @@
         </table>
     </#list>
     
-    <h2 id="questions-unanswered">questions unanswered</h2>
+        <h2 id="questions-unanswered">questions unanswered</h2>
         <#list questions?keys as category>
         <h4>${category}</h4> 
         <table class="table table-striped">
@@ -71,10 +137,10 @@
                 </tr>
             </thead>
             <tbody>
-                <#list sentiments?keys as word>
+                <#list wordsUsed?keys as word>
                 <tr>
                     <td>${word}</td>
-                    <td>${sentiments[word]}</td>
+                    <td>${wordsUsed[word]}</td>
                 </tr>
                 </#list>
             </tbody>
@@ -85,11 +151,16 @@
         <h4>${category}</h4> 
         <table class="table table-striped">
             <tbody>
-                <#list words[category] as subwords>
                 <tr>
+                <#list words[category] as subwords>
                     <td>${subwords}</td>
-                </tr>
+                    <#if subwords?counter % 3 == 0>
+                        </tr>
+                        <tr>
+                    </#if>
                 </#list>
+                </tr>
+
             </tbody>
         </table>
         </#list>

@@ -1,0 +1,99 @@
+<#import "../layout/defaultLayout.ftl.html" as layout> 
+<@layout.myLayout "Home page">    
+
+
+<h1>${i18n("settings")} <span class="glyphicon glyphicon-cog"></span></h1>
+<p>${i18n("settings.description")}</p>
+<div>
+    <form id="settingsForm" enctype="multipart/form-data" action="/settings" method="post">
+        <div class="form-group">
+            <table class="form">
+                <tr>
+                    <td>
+                        <label for="user">User</label>
+                        <select id="userSelect" class="form-control" name="currentUser">
+                            <#list users as user>
+                            <option <#if (user == currentUser)> selected</#if> value="${user}">${user}</option>
+                            </#list>
+                            <option id="createUser" value="create">Create New User</option>
+                        </select>
+                        <input id="userInput" class="form-control" type="text" name="userInput">
+                        <p>Current: ${currentUser} </p>
+                        <a href="/assets/data/${currentUser}.db">Export</a>
+                        | Import (*.db):<input class="form-control" type="file" name="upUser">
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label style="margin-top: 50px;" for="user">Bot</label>
+                        <select id="botSelect" class="form-control" name="currentBot">
+                            <#list bots as bot>
+                            <option <#if (bot == currentBot)>
+                                    selected
+                                    <#assign tmp = "bto" in layout>
+                                </#if> value="${bot}">${bot}</option>
+                            </#list>
+                            <option id="createBot" id="upUser" value="create">Create New Bot</option>
+                        </select>
+                        <input id="botInput" class="form-control" type="text" name="botInput">
+                        <p>Current: ${currentBot} </p>
+                        <a href="/assets/data/${currentBot}.db">Export</a>
+                        | Import (*.db):<input id="upBot" class="form-control" type="file" name="upBot">
+                    </td>
+                </tr>
+
+            </table>
+
+            <button id="save" class="btn btn-primary" type="submit">Save</button>
+
+        </div>
+
+    </form>
+</div>
+
+<script>
+    $(function () {
+        toggleFields();
+        $("#userSelect").change(function () {
+            toggleFields();
+        });
+        $("#botSelect").change(function () {
+            toggleFields();
+        });
+        
+        $("#settingsForm").submit(function () {
+            $("#createUser").val($("#userInput").val());
+            $("#createBot").val($("#botInput").val());
+        });
+    });
+    
+    // this toggles the visibility of the creation fields
+    function toggleFields() {
+        if ($("#userSelect").val() === "create") {
+            $("#userInput")
+                    .show()
+                    .focus()
+                    .prop('required', true);
+        }
+        else {
+            $("#userInput")
+                    .hide()
+                    .prop('required', false);
+        }
+        
+        if ($("#botSelect").val() === "create") {
+            $("#botInput")
+                    .show()
+                    .focus()
+                    .prop('required', true);
+        }
+        else {
+            $("#botInput")
+                    .hide()
+                    .prop('required', false);
+        }
+    }
+</script>
+
+</@layout.myLayout>

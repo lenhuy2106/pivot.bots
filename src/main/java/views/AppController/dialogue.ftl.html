@@ -2,7 +2,8 @@
 <@layout.myLayout "Home page">    
 
 
-<h1>${i18n("dialogue")}</h1>
+<h1>${i18n("dialogue")} <span class="glyphicon glyphicon-transfer"></span></h1>
+<p>${i18n("dialogue.description")}</p>
 
 <div class="dialogue">
     <#list messages?reverse as item>
@@ -16,9 +17,14 @@
     </#list>
 </div>
 
-<form class="input" action="/dialogue" method="post">
-    Chat: <input type="text" name="text" autofocus>
-    <input type="submit" value="Send">
+<form id="chat-input" class="input" action="/dialogue" method="post">
+    Chat: <input style="width:300px;" type="text" name="text" autofocus>
+    <input id="send-button" type="submit" value="Enter">
+</form>
+
+<form class="input" action="/dialogue?skip=true" method="post">
+    <input type="hidden" name="text" value="I don't understand the question.">
+    <input id="skip-button" type="submit" value="&quot;I don't understand the question.&quot;">
 </form>
 
 </@layout.myLayout>
