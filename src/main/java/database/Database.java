@@ -1,21 +1,20 @@
-/*
- * Nhu Huy Le
- */
 package database;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
 /**
- *
- * @author T500
+ * Database interface.
+ * Implement for every different type of database.
+ * @author Nhu Huy Le <mail@huy-le.de>
  */
 public interface Database {
-    
-    public void saveInt(String property, int val) throws IOException;
-    public void saveString(String property, String val) throws IOException;
-    public void saveCollection(String property, Collection coll) throws IOException;
-    public int loadInt(String property, int defVal) throws IOException;
-    public String loadString(String property, String defVal) throws IOException;
-    public <T extends Collection> T loadCollection(String property, T defVal) throws IOException;
+
+    Database saveInt(String property, int val) throws IOException;
+    Database saveString(String property, String val) throws IOException;
+    Database saveCollection(String property, Collection coll) throws IOException;
+    int loadInt(String property, int defVal) throws IOException;
+    String loadString(String property, String defVal) throws IOException;
+    <T extends Collection> T loadCollection(String property, T defVal) throws IOException;
 }

@@ -1,15 +1,21 @@
-
 package models;
 
 /**
- *
- * @author T500
+ * Learning POJO.
+ * Is parsed from the http post request.
+ * @author Nhu Huy Le <mail@huy-le.de>
  */
 public class Learning {
-    
+
+    /**
+     * Text to learn/extract.
+     */
     private String corpus;
-    
-    private Category category;
+
+    /**
+     * Category to learn with.
+     */
+    private String category;
 
     public Learning() {
     }
@@ -22,17 +28,12 @@ public class Learning {
         this.corpus = corpus;
     }
 
-    public Category getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 
-    @Override
-    public String toString() {
-        return "Learning{" + "corpus=" + corpus.substring(0, 50) + "..., category=" + category + '}';
-    }
-    
 }

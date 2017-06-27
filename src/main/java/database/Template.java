@@ -1,20 +1,28 @@
-/*
- * Nhu Huy Le
- */
-package models;
+package database;
 
 import java.util.Random;
 
 /**
  *
- * @author T500
+ * @author Nhu Huy Le <mail@huy-le.de>
  */
 public class Template {
-    
+
+    /**
+     * Retrieved question template.
+     * Format is "Do you [lemmatized verb] [object]?"
+     */
     public static final String QUESTION_RETRIEVED = "Do you %s %s?";
-    
+
+    /**
+     * Static random class instance.
+     */
     private static final Random RND = new Random();
-    
+
+    /**
+     * Generate question templates.
+     * Format is "...[keyword]."
+     */
     public static final String[] QUESTION_GENERATED = {
         "Tell me what you know about %s.",
         "What do you think of %s?",
@@ -26,12 +34,17 @@ public class Template {
         "Do you know about %s?",
         "Do you work with %s?",
         "Do you have experience with %s?",
-        "What is your opinion of %s?",
+        "What is your opinion on %s?",
         "Tell me your opinion about %s please.",
     };
-    
+
+    /**
+     * Selects a template randomly.
+     * @param templates
+     * @return
+     */
     public static String random(String[] templates) {
         return templates[RND.nextInt(templates.length)];
-    }   
-    
+    }
+
 }

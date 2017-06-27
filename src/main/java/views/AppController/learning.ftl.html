@@ -5,24 +5,26 @@
 <h1>${i18n("learning")} <span class="glyphicon glyphicon-heart"></span></h1>
 <p>${i18n("learning.description")}</p>
 
-<form action="/learningStart" method="post">
+<form id="learningForm" action="/learningStart" method="post">
     <div class="form-group">
     <table class="form">
         <tr>
             <td>
                 <label for="category">Category:</label>
-                <select class="form-control" name="category">
+                <select id="categorySelect" class="form-control" name="category">
                     <#list categories as category>
                     <option value="${category}">${category}</option>
                     </#list>
+                    <option id="createCategory" value="create">Create New Category</option>
+                    <input id="categoryInput" class="form-control" type="text" name="userInput">
                 </select>
             </td>
         </tr>
-
+        
         <tr>
             <td>
                 <label for="corpus">Corpus:</label>
-                <textarea class="form-control" name="corpus" rows="20" cols="50"></textarea>
+                <textarea class="form-control" name="corpus" rows="20" cols="50" required></textarea>
             </td>
             <td>
                 <p class="learning-example">
@@ -43,5 +45,32 @@
 
 </form>
 
+<script>
+    $(function () {
+        toggleFields();
+        $("#categorySelect").change(function () {
+            toggleFields();
+        });
+        
+        $("#learningForm").submit(function () {
+            $("#createCategory").val($("#categoryInput").val());
+        });
+    });
+    
+    // this toggles the visibility of the creation fields
+    function toggleFields() {
+        if ($("#categorySelect").val() === "create") {
+            $("#categoryInput")
+                    .show()
+                    .focus()
+                    .prop('required', true);
+        }
+        else {
+            $("#categoryInput")
+                    .hide()
+                    .prop('required', false);
+        }
+    }
+</script>
 
 </@layout.myLayout>

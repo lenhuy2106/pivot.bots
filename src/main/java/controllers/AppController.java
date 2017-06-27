@@ -1,16 +1,19 @@
-
 package controllers;
 
+import com.google.inject.Inject;
 import ninja.Result;
 import ninja.Results;
 
 import com.google.inject.Singleton;
+import static database.Constants.DEFAULT_BOT;
+import static database.Constants.DEFAULT_USER;
+import static database.Constants.GENERAL_CATEGORY;
+import static database.Constants.NO_MORE_QUESTIONS;
 import models.Learning;
 import ninja.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.stanford.nlp.simple.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,157 +24,175 @@ import java.util.Optional;
 import java.util.Set;
 import models.Message;
 import org.eclipse.jetty.util.StringUtil;
-import database.Database;
 import database.PropertyDB;
-import java.util.Arrays;
+import edu.stanford.nlp.simple.Document;
+import edu.stanford.nlp.simple.Sentence;
+import edu.stanford.nlp.simple.SentimentClass;
+import static edu.stanford.nlp.simple.SentimentClass.*;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import models.Category;
-import models.Template;
+import database.Template;
 import ninja.params.Param;
 import ninja.uploads.DiskFileItemProvider;
 import ninja.uploads.FileItem;
 import ninja.uploads.FileProvider;
+import controllers.services.DatabaseService;
+import controllers.services.LearningService;
+import controllers.services.LearningService.LearningResult;
 
+/**
+ * The Application Controller.
+ * Contains the logic of the application.
+ * @author Nhu Huy Le <mail@huy-le.de>
+ * @see <a href="http://www.ninjaframework.org/documentation/basic_concepts/controllers.html"></a>
+ */
 @FileProvider(DiskFileItemProvider.class)
 @Singleton
 public class AppController {
-    
-    private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
-    
-    private final static String[] TAGS_NOUN = {"NN", "NNS", "NNP", "NNPS"};
-    
-    private final static String[] TAGS_VERB = {"VB", "VBD", "VBG", "VBN", "VBP", "VBZ"};
-        
-    public static final Random RND = new Random();
-        
-    /**
-     * categorized.
-     */
-    private final Map<String, Set<String>> words = new HashMap<>();
-    
-    private final Map<String, SentimentClass> wordsUsed = new HashMap<>();
-    
-    private final Map<String, Set<String>> questions = new HashMap<>();
-    
-    private final Map<String, Set<String>> questionsAnswered = new HashMap<>();
-    
-    private final List<String> messages = new ArrayList<>();
-    
-    private final Database settingsDB = new PropertyDB("settings");
-    
-    private final Set<String> users = settingsDB.loadCollection("users", new HashSet<>());
 
-    private final Set<String> bots = settingsDB.loadCollection("bots", new HashSet<>());
-    
-    private String currentUser = settingsDB.loadString("currentUser", "defaultUser");
-    
-    private String currentBot = settingsDB.loadString("currentBot", "defaultBot");
-    
+    private static final Logger LOG = LoggerFactory.getLogger(AppController.class);
+
+    /**
+     * The service providing the learning.
+     */
+    private final LearningService learningService;
+
+    /**
+     * the service providing the database.
+     */
+    private final DatabaseService dbService;
+
+    /**
+     * All the messages of the user's session.
+     */
+    private final List<String> messages = new ArrayList<>();
+
+    /**
+     * Flatted (non-categorized) available words.
+     */
     private Set<String> vocab = new HashSet<>();
-    
-    private Category currentCat;
-    
-    private Database userDB = new PropertyDB(currentUser);
-    
-    private Database botDB  = new PropertyDB(currentBot);
-    
-    public AppController() throws IOException {
+
+    /**
+     * All users selectable.
+     */
+    private final Set<String> users;
+
+    /**
+     * All bots selectable.
+     */
+    private final Set<String> bots;
+
+    /**
+     * The selected user.
+     */
+    private String currentUser;
+
+    /**
+     * The selected bot.
+     */
+    private String currentBot;
+
+    /**
+     * The randomly chosen category for the current question.
+     */
+    private String currentCategory;
+
+    /**
+     * All categories provided by bot.
+     */
+    private Set<String> categories = new HashSet<>();
+
+    /**
+     * All categorized questions of the bot.
+     */
+    private final Map<String, Set<String>> questions;
+
+    /**
+     * All categorized questions already answered by user.
+     */
+    private final Map<String, Set<String>> questionsAnswered = new HashMap<>();
+
+    /**
+     * All categorized words of the bot.
+     */
+    private final Map<String, Set<String>> words;
+
+    /**
+     * All words used and semantically analyzed.
+     */
+    private Map<String, SentimentClass> wordsUsed = new HashMap<>();
+
+    /**
+     * Random class instance.
+     */
+    @Inject
+    private Random RND;
+
+    /**
+     * Ctor.
+     * @param learningService Injected learning service.
+     * @param dbService Injected database service.
+     * @throws IOException If database is not accessable.
+     */
+    @Inject
+    public AppController(
+            LearningService learningService,
+            DatabaseService dbService) throws IOException {
+        this.learningService = learningService;
+        this.dbService = dbService;
+        users = dbService.loadUsers();
+        bots  = dbService.loadBots();
+        currentUser = dbService.loadCurrentUser();
+        currentBot  = dbService.loadCurrentBot();
+        words = learningService.getWords();
+        questions = learningService.getQuestions();
+
         init();
     }
 
-    private void init() throws IOException {
-        // load from persistent userDB
-            // words and questions for each category (e.g. front- or backend)
-        for (Category category : Category.values()) {
-            words.put(category.name(), botDB.loadCollection("words." + category.name(), new HashSet<>()));
-            questions.put(category.name(), botDB.loadCollection("questions." + category.name(), new HashSet<>()));
-            questionsAnswered.put(category.name(), userDB.loadCollection("questions.answered." + category.name(), new HashSet<>()));
-        }
-            // sentiment analysis
-        List<String> sentimentKeys = userDB.loadCollection("words.used", new ArrayList<>());
-        List<String> sentimentVals = userDB.loadCollection("words.used.sentiment", new ArrayList<>());   
-        for (int i = 0; i < sentimentKeys.size(); i++) {
-            wordsUsed.put(
-                    sentimentKeys.get(i),
-                    SentimentClass.valueOf(sentimentVals.get(i)));
-        }
-        
-        vocab = words.values().stream()
-                .flatMap(w -> w.stream())
-                .collect(Collectors.toSet());
-        messages.add(String.format(
-                "Hello %s! I want to ask you some questions.",
-                currentUser));
-        users.add("defaultUser");
-        bots.add("defaultBot");
-    }
-    
     /**
      * Index GET.
-     * @return 
+     * @return website.
      */
     public Result index() {
         return Results.html()
                 .render("currentUser", currentUser);
     }
-    
+
     /**
      * Learning GET.
-     *
-     * @return
+     * @return website.
      */
     public Result learning() {
         return Results.html()
                 .render("currentUser", currentUser)
-                .render("categories", Category.values());
+                .render("categories", categories);
     }
-    
+
     /**
      * Learning execution POST.
-     *
-     * @param context
-     * @param learning
-     * @return
-     * @throws java.io.IOException
+     * @param context Injected session context.
+     * @param learning Injected/parsed learning object.
+     * @return website.
+     * @throws java.io.IOException If database is not accessable.
      */
     public Result learningStart(Context context, Learning learning) throws IOException {
         LOG.info("learning with: {}", learning);
-        Document corpus      = new Document(learning.getCorpus());
-        Set wordsToTrain     = words.get(learning.getCategory().name());
-        Set questionsToTrain = questions.get(learning.getCategory().name());
-        
-        corpus.sentences().forEach(sentence -> {
-            boolean seenBefore = false;
-            for (int i = 0; i < sentence.words().size(); i++) {
-                // extract relevant nouns of corpus
-                if (Arrays.asList(TAGS_NOUN).contains(sentence.posTag(i))) {
-                    wordsToTrain.add(sentence.word(i).trim().toLowerCase());
-                }
-                // extract relevant questions
-                else if (!seenBefore && Arrays.asList(TAGS_VERB).contains(sentence.posTag(i))) {
-                    // no 'be' statements
-                    if (!sentence.lemma(i).equals("be")) {
-                        String question = String.format(Template.QUESTION_RETRIEVED,
-                                sentence.lemma(i),
-                                sentence.substring(i + 1, sentence.length() - 1));
-                        // escape parentheses
-                        question = question
-                                .replace("-LRB-", "(")
-                                .replace("-RRB-", ")");
-                        questionsToTrain.add(question);
-                    }
-                    seenBefore = true;
-                }
-            }
-        });        
-        
+        categories.add(learning.getCategory());
+        dbService.saveCategories(categories);
+        init();
+
+        LearningResult learningResult = learningService.extract(learning);
         LOG.info("questions extracted: " + questions.toString());
-        
+
         // save to botDB
-        botDB.saveCollection("words." + learning.getCategory(), wordsToTrain);
-        botDB.saveCollection("questions." + learning.getCategory(), questionsToTrain);
+        dbService.saveWords(
+                learning.getCategory(),
+                learningResult.getWordsToTrain());
+        dbService.saveQuestions(
+                learning.getCategory(),
+                learningResult.getQuestionsToTrain());
         // update vocab
         vocab = words.values().stream()
                 .flatMap(w -> w.stream())
@@ -180,47 +201,48 @@ public class AppController {
                 .render("currentUser", currentUser)
                 .render(learning);
     }
-    
+
     /**
      * Dialogue GET/POST.
-     *
-     * @param context
-     * @param messageOpt
-     * @param skip
-     * @return
-     * @throws java.io.IOException
+     * @param context Injected session context.
+     * @param messageOpt Optional message answer.
+     * @param skip If question wasn't understood.
+     * @return website.
+     * @throws java.io.IOException If database is not accessable.
      */
     public Result dialogue(
             Context context,
             Optional<Message> messageOpt,
             @Param("skip") Optional<Boolean> skip) throws IOException {
-        
+
         String text = messageOpt.isPresent()
                 ? messageOpt.get().getText()
                 : "";
-        
+
         // there must be a user message
         if (StringUtil.isBlank(text)) {
             return Results.html()
                     .render("currentUser", currentUser)
+                    .render("currentBot", currentBot)
+                    .render("vocab", vocab)
                     .render("messages", messages);
         }
-        
+
         messages.add(text);
-        
+
         // message is relevant answer
-        if (currentCat != null) {
+        if (currentCategory != null) {
             // flag question
             String prevQuestion = messages.get(messages.size() - 2);
-            Set<String> categorized = questionsAnswered.get(currentCat.name());
+            Set<String> categorized = questionsAnswered.get(currentCategory);
             categorized.add(prevQuestion);
-            questions.get(currentCat.name()).remove(prevQuestion);
-            userDB.saveCollection("questions.answered." + currentCat, categorized);
-            
+            questions.get(currentCategory).remove(prevQuestion);
+            dbService.saveQuestionsAnswered(currentCategory, categorized);
+
             if (!skip.isPresent()) {
                 Document doc = new Document(text);
                 AtomicInteger avg = new AtomicInteger();
-                doc.sentences().forEach(sentence -> {
+                for (Sentence sentence : doc.sentences()) {
                     // get overall msg sentiment
                     switch (sentence.sentiment()) {
                         case VERY_POSITIVE:
@@ -235,125 +257,60 @@ public class AppController {
                         default:
                     }
 
-                    // general sentiment counter
-                    int delta = avg.get() >= 0
-                            ? 1
-                            : -1;
-                    try {
-                        userDB.saveInt(currentCat.name(), userDB.loadInt(currentCat.name(), 0) + delta);
-                    } catch (IOException ex) {
-                        LOG.error("db access failed.", ex);
+                    // whole statement sentiment counter
+                    if (avg.get() >= 0) {
+                        dbService.incCount(currentCategory);
                     }
-
-                    // word specific sentiment counter
-                    sentence.words().stream()
-                            .map(String::toLowerCase)
-                            .filter(word -> vocab.contains(word))
-                            .forEach(recognized -> {
-                                // save sentiment of word
-                                wordsUsed.put(recognized, sentence.sentiment());
-                                try {
-                                    // general sentiment
-                                    switch (sentence.sentiment()) {
-                                        case VERY_POSITIVE:
-                                        case POSITIVE:
-                                            userDB.saveInt(currentCat.name(), userDB.loadInt(currentCat.name(), 0) + 1);
-                                            break;
-                                        case VERY_NEGATIVE:
-                                        case NEGATIVE:
-                                            userDB.saveInt(currentCat.name(), userDB.loadInt(currentCat.name(), 0) - 1);
-                                            break;
-                                        case NEUTRAL:
-                                        default:
-                                    }
-                                    userDB.saveCollection("words.used", wordsUsed.keySet());
-                                    userDB.saveCollection("words.used.sentiment", wordsUsed.values());
-                                } catch (IOException ex) {
-                                    LOG.error("db access failed.", ex);
-                                }
-                                LOG.info("message sentiment: {} [{}]",
-                                        recognized,
-                                        sentence.sentiment());
-                            });
-                });
+                    else {
+                        dbService.decCount(currentCategory);
+                    }
+                    // per sentence (word-specific) sentiment counter
+                    countSentiment(sentence);
+                }
             }
         }
-        
-        // next random question
-        currentCat = randomEnum(Category.class);
-        Optional<String> nextQuestion;
-        AtomicInteger filtered = new AtomicInteger(-1);
-            // retrieve question
-        if (RND.nextBoolean()) {
-            Set<String> subquestions = questions.get(currentCat.name());
-            nextQuestion = subquestions.stream()
-                    .filter(w -> !questionsAnswered.get(currentCat.name()).contains(w))
-                    .peek(w -> filtered.incrementAndGet())
-                    .skip((int) (filtered.get() * Math.random()))
-                    .findFirst();
-        }
-            // generate question
-        else {
-            Set<String> subwords = words.get(currentCat.name());
-            String nextWord = subwords.stream()
-                    // only unused words
-                    .filter(w -> !wordsUsed.keySet().contains(w))
-                    .peek(w -> filtered.incrementAndGet())
-                    .skip((int) (filtered.get() * Math.random()))
-                    .findFirst()
-                    .orElse(currentCat.name());
-            nextQuestion = Optional.ofNullable(String.format(
-                    Template.random(Template.QUESTION_GENERATED), nextWord));
-            // TODO after user answer with correct sentiment (e.g. lastWord field)
-            wordsUsed.put(nextWord, SentimentClass.NEUTRAL);
-        }
-        
-        messages.add(nextQuestion.orElse("Tell me more."));
-        
+
+        messages.add(nextQuestion().orElse(NO_MORE_QUESTIONS));
+
         return Results.html()
                 .render("currentUser", currentUser)
+                .render("currentBot", currentBot)
+                .render("vocab", vocab)
                 .render("messages", messages);
     }
-    
-    public static <T extends Enum<?>> T randomEnum(Class<T> clazz) {
-        int x = RND.nextInt(clazz.getEnumConstants().length);
-        return clazz.getEnumConstants()[x];
-    }
-    
     /**
      * Analysis GET.
-     *
-     * @return
-     * @throws java.io.IOException
+     * @return website.
+     * @throws java.io.IOException If database is not accessable.
      */
     public Result analysis() throws IOException {
-        Map<String, Integer> counter = Arrays.asList(Category.values()).stream()
-        .collect(Collectors.toMap(cat -> cat.name(),
+        Map<String, Integer> counter = categories.stream()
+                .collect(Collectors.toMap(cat -> cat,
                         cat -> {
-                                try {
-                                    return userDB.loadInt(cat.name(), 0);
-                                }
-                                catch (IOException ex) {
-                                    LOG.error("database access failed.", ex);
-                                    return 0;
-                                }
-                            }));
+                            try {
+                                return dbService.loadCount(cat);
+                            }
+                            catch (IOException ex) {
+                                LOG.error("database access failed.", ex);
+                                return 0;
+                            }
+                        }));
         AtomicInteger sum = new AtomicInteger();
-        
+
         // bot potential
-        long botPotential = 
-                words.values().stream()
+        long botPotential
+                = words.values().stream()
                         .flatMap(s -> s.stream())
                         .count()
                 + questions.values().stream()
                         .flatMap(s -> s.stream())
                         .count();
-        long usedPotential =
-                wordsUsed.size()
+        long usedPotential
+                = wordsUsed.size()
                 + questionsAnswered.values().stream()
                         .flatMap(s -> s.stream())
                         .count();
-        
+
         // arithmetic adjust
         counter.forEach((cat, count) -> {
             counter.put(cat, count < 0
@@ -373,7 +330,7 @@ public class AppController {
         usedPotential = usedPotential > botPotential
                 ? botPotential
                 : usedPotential;
-        
+
         return Results.html()
                 .render("currentUser", currentUser)
                 .render("sum", sum.get())
@@ -385,15 +342,23 @@ public class AppController {
                 .render("botPotential", botPotential)
                 .render("usedPotential", usedPotential);
     }
-    
+
+    /**
+     * Settings GET.
+     * @param ctx Session context.
+     * @param upUser Optional user to import.
+     * @param upBot Optional bot to import.
+     * @return website.
+     * @throws IOException If database is not accessable.
+     */
     public Result settings(
             Context ctx,
             @Param("upUser") Optional<FileItem> upUser,
-            @Param("upBot") Optional<FileItem> upBot) throws IOException {        
-        
+            @Param("upBot") Optional<FileItem> upBot) throws IOException {
+
         String changeUser = ctx.getParameter("currentUser");
-        String changeBot  = ctx.getParameter("currentBot");        
-        
+        String changeBot = ctx.getParameter("currentBot");
+
         upUser.ifPresent((userItem) -> {
             LOG.info("uploading new user...");
             users.add(PropertyDB.importFile(userItem).orElse(currentUser));
@@ -402,41 +367,39 @@ public class AppController {
             LOG.info("uploading new bot...");
             bots.add(PropertyDB.importFile(botItem).orElse(currentBot));
         });
-        
-        if (StringUtil.isNotBlank(changeUser) || StringUtil.isNotBlank(changeBot)) { 
-           // reset settings
+
+        if (StringUtil.isNotBlank(changeUser) || StringUtil.isNotBlank(changeBot)) {
+            // reset settings
             currentUser = StringUtil.isBlank(changeUser)
                     ? currentUser
                     : changeUser;
-            messages.clear();
             words.clear();
             wordsUsed.clear();
             questionsAnswered.clear();
-            currentCat = null;
+            currentCategory = null;
 
             currentBot = StringUtil.isBlank(changeBot)
                     ? currentBot
                     : changeBot;
             vocab.clear();
             questions.clear();
-            
+
             try {
-                userDB = new PropertyDB(currentUser);
-                botDB  = new PropertyDB(currentBot);
-                
+                dbService.saveCurrentUser(currentUser);
+                dbService.saveCurrentBot(currentBot);
+
                 users.add(currentUser);
                 bots.add(currentBot);
-                
-                settingsDB.saveCollection("users", users);
-                settingsDB.saveCollection("bots", bots);
+
+                dbService.saveUsers(users);
+                dbService.saveBots(bots);
 
                 init();
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 LOG.error("Failed to reinitialize App.", ex);
             }
         }
-        
+
         return Results.html()
                 .render("users", users)
                 .render("bots", bots)
@@ -444,5 +407,110 @@ public class AppController {
                 .render("currentBot", currentBot);
     }
 
-   
+    /**
+     * (Re)initializes current bot and user.
+     * @throws IOException
+     */
+    private void init() throws IOException {
+        // load from persistent userDB
+        // words and questions for each category (e.g. front- or backend)
+        categories = dbService.loadCategories();
+        for (String category : categories) {
+            words.put(category, dbService.loadWords(category));
+            questions.put(category, dbService.loadQuestions(category));
+            questionsAnswered.put(category, dbService.loadQuestionsAnswered(category));
+        }
+        // sentiment analysis
+        wordsUsed = dbService.loadWordsUsed();
+
+        vocab = words.values().stream()
+                .flatMap(w -> w.stream())
+                .collect(Collectors.toSet());
+        messages.clear();
+        messages.add(String.format(
+                "Hello %s! I want to ask you some questions.",
+                currentUser));
+        // always available
+        users.add(DEFAULT_USER);
+        bots.add(DEFAULT_BOT);
+    }
+
+    /**
+     * Provides the next question of random category for the dialogue if possible.
+     * Either
+     *  1. retrieves an extracted question or
+     *  2. generates a new question from template and keyword.
+     * @return Optional next question.
+     */
+    private Optional<String> nextQuestion() {
+        // random category
+        Optional<String> nextQuestion;
+        AtomicInteger filtered = new AtomicInteger(0);
+        currentCategory = categories.stream()
+                .skip((int) (categories.size() * Math.random()))
+                .findFirst()
+                .orElse(GENERAL_CATEGORY);
+            // retrieve question
+        if (RND.nextBoolean()) {
+            Set<String> subquestions = questions.get(currentCategory);
+            nextQuestion = subquestions.stream()
+                    .filter(w -> !questionsAnswered.get(currentCategory).contains(w))
+                    .peek(w -> filtered.incrementAndGet())
+                    .skip((int) (filtered.get() * Math.random()))
+                    .findFirst();
+        }
+            // generate question
+        else {
+            Set<String> subwords = words.get(currentCategory);
+            String nextWord = subwords.stream()
+                    // only unused words
+                    .filter(w -> !wordsUsed.keySet().contains(w))
+                    .peek(w -> filtered.incrementAndGet())
+                    .skip((int) (filtered.get() * Math.random()))
+                    .findFirst()
+                    .orElse(currentCategory);
+            nextQuestion = Optional.of(String.format(
+                    Template.random(Template.QUESTION_GENERATED), nextWord));
+            wordsUsed.put(nextWord, SentimentClass.NEUTRAL);
+        }
+        return nextQuestion;
+    }
+
+    /**
+     * Semantically process a sentence for the analysis.
+     * @param sentence to process.
+     * @throws IOException If database is not accessable.
+     */
+    private void countSentiment(Sentence sentence) throws IOException {
+        sentence.words().stream()
+                .map(String::toLowerCase)
+                .filter(word -> vocab.contains(word))
+                .forEach(recognized -> {
+                    // save sentiment of word
+                    wordsUsed.put(recognized, sentence.sentiment());
+                    try {
+                        // general sentiment
+                        switch (sentence.sentiment()) {
+                            case VERY_POSITIVE:
+                            case POSITIVE:
+                                dbService.incCount(currentCategory);
+                                break;
+                            case VERY_NEGATIVE:
+                            case NEGATIVE:
+                                dbService.decCount(currentCategory);
+                                break;
+                            case NEUTRAL:
+                            default:
+                        }
+                        dbService.saveWordsUsed(wordsUsed);
+                    }
+                    catch (IOException ex) {
+                        LOG.error("db access failed.", ex);
+                    }
+                    LOG.info("message sentiment: {} [{}]",
+                            recognized,
+                            sentence.sentiment());
+                });
+    }
+
 }
