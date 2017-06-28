@@ -1,6 +1,5 @@
 package database;
 
-import com.google.inject.Inject;
 import static database.Constants.DATA_PATH;
 import static database.Constants.DELIMITER;
 import java.io.File;

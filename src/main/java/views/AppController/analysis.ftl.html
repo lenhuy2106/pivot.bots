@@ -101,11 +101,11 @@
     </div>
     
     <h2 id="questions-answered">questions answered</h2>
-        <#list questions?keys as category>
+    <#list session.questions?keys as category>
         <h4>${category}</h4> 
         <table class="table table-striped">
             <tbody>
-                <#list questionsAnswered[category] as subquestions>
+                <#list session.questionsAnswered[category] as subquestions>
                 <tr>
                     <td>${subquestions}</td>
                 </tr>
@@ -115,11 +115,11 @@
     </#list>
     
         <h2 id="questions-unanswered">questions unanswered</h2>
-        <#list questions?keys as category>
+        <#list session.questions?keys as category>
         <h4>${category}</h4> 
         <table class="table table-striped">
             <tbody>
-                <#list questions[category] as subquestions>
+                <#list session.questions[category] as subquestions>
                 <tr>
                     <td>${subquestions}</td>
                 </tr>
@@ -137,22 +137,22 @@
                 </tr>
             </thead>
             <tbody>
-                <#list wordsUsed?keys as word>
+                <#list session.wordsUsed?keys as word>
                 <tr>
                     <td>${word}</td>
-                    <td>${wordsUsed[word]}</td>
+                    <td>${session.wordsUsed[word]}</td>
                 </tr>
                 </#list>
             </tbody>
         </table>
 
         <h2 id="all-words">all words (vocabulary)</h2>
-        <#list words?keys as category>
+        <#list session.words?keys as category>
         <h4>${category}</h4> 
         <table class="table table-striped">
             <tbody>
                 <tr>
-                <#list words[category] as subwords>
+                <#list session.words[category] as subwords>
                     <td>${subwords}</td>
                     <#if subwords?counter % 3 == 0>
                         </tr>

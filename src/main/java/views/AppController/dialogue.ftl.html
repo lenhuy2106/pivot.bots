@@ -7,7 +7,7 @@
 
 <div style="display: inline-block;">
     <div class="dialogue">
-        <#list messages?reverse as item>
+        <#list session.messages?reverse as item>
         <div class="talk-bubble ${['tri-right', 'own'][item_index % 2]} round right-top">
                 <div class="talktext">
                     <p>
@@ -20,7 +20,7 @@
 </div>
 
 <div class="bot-info">
-    <div><b>${currentBot}</b></div>
+    <div><b>${session.currentBot}</b></div>
     <canvas id="wordcloud"></canvas>
 </div>
 
@@ -37,7 +37,7 @@
 <script>
     WordCloud(document.getElementById('wordcloud'), { 
         list: [
-            <#list vocab as word>
+            <#list session.vocab as word>
                 ['${word}', 5],
             </#list>
         ],

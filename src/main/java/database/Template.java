@@ -38,6 +38,10 @@ public class Template {
         "Tell me your opinion about %s please.",
     };
 
+    public static final String FORM_GREETING = "Hello %s! I want to ask you some questions.";
+
+    public static final String NO_MORE_QUESTIONS = "Tell me more.";
+
     /**
      * Selects a template randomly.
      * @param templates

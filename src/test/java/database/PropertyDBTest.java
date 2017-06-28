@@ -8,7 +8,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -17,10 +16,10 @@ import java.util.Properties;
 import ninja.uploads.FileItem;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import static org.mockito.Matchers.*;
@@ -82,7 +81,6 @@ public class PropertyDBTest {
      */
     @Test
     public void testSaveString() throws Exception {
-        System.out.println("saveString");
         String property = "prop";
         String val = "val";
         instance.saveString(property, val);
@@ -96,7 +94,6 @@ public class PropertyDBTest {
 //     */
     @Test
     public void testSaveCollection() throws Exception {
-        System.out.println("saveCollection");
         String key = "coll";
         instance.saveCollection(key, Arrays.asList(new String[] {"1", "2"}));
         verify(props).setProperty(eq(key), anyString());
@@ -107,7 +104,6 @@ public class PropertyDBTest {
      */
     @Test
     public void testSaveInt() throws Exception {
-        System.out.println("saveInt");
         String key = "int";
         int val = 0;
         instance.saveInt(key, val);
@@ -119,7 +115,6 @@ public class PropertyDBTest {
      */
     @Test
     public void testLoadInt() throws Exception {
-        System.out.println("loadInt");
         String key = "int2";
         int result = instance.loadInt(key, 1);
         verify(props).getProperty(eq(key), eq("1"));
@@ -132,7 +127,6 @@ public class PropertyDBTest {
      */
     @Test
     public void testLoadCollection() throws Exception {
-        System.out.println("loadCollection");
         String key = "prop";
         Collection coll = new HashSet<>();
         Collection result = instance.loadCollection(key, coll);
@@ -144,7 +138,6 @@ public class PropertyDBTest {
 //     */
     @Test
     public void testLoadString() throws Exception {
-        System.out.println("loadString");
         String property = "string2";
         String test = "test";
         String result = instance.loadString(property, test);
@@ -158,7 +151,6 @@ public class PropertyDBTest {
      */
     @Test
     public void testImportInvalidFile() {
-        System.out.println("importFile");
         FileItem item = Mockito.mock(FileItem.class);
         when(item.getFileName()).thenReturn("invalid");
         Optional<String> result = PropertyDB.importFile(item);

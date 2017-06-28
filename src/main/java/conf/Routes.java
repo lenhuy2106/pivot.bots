@@ -1,9 +1,9 @@
 package conf;
 
+import controllers.AppController;
 import ninja.AssetsController;
 import ninja.Router;
 import ninja.application.ApplicationRoutes;
-import controllers.AppController;
 
 /**
  * Internal routing of the http requests.

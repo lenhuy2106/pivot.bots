@@ -12,7 +12,7 @@
             <td>
                 <label for="category">Category:</label>
                 <select id="categorySelect" class="form-control" name="category">
-                    <#list categories as category>
+                    <#list session.categories as category>
                     <option value="${category}">${category}</option>
                     </#list>
                     <option id="createCategory" value="create">Create New Category</option>

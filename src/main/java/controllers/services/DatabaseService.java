@@ -14,17 +14,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import models.Learning;
 
 /**
  * The service abstraction for the database access.
  * @author Nhu Huy Le <mail@huy-le.de>
  */
-public final class DatabaseService {
+public class DatabaseService {
 
     /**
      * settings database.
      */
-    private final Database settingsDB;
+    private Database settingsDB;
 
     /**
      * user database.
@@ -37,9 +38,9 @@ public final class DatabaseService {
     private Database botDB;
 
     public DatabaseService() throws IOException {
-        this.settingsDB  = new PropertyDB(FILENAME_SETTINGS);
-        this.userDB      = new PropertyDB(loadCurrentUser());
-        this.botDB       = new PropertyDB(loadCurrentBot());
+        this.settingsDB = new PropertyDB(FILENAME_SETTINGS);
+        this.userDB     = new PropertyDB(loadCurrentUser());
+        this.botDB      = new PropertyDB(loadCurrentBot());
     }
 
     public Database getSettingsDB() {
@@ -150,6 +151,15 @@ public final class DatabaseService {
     public void saveCurrentBot(String bot) throws IOException {
         settingsDB.saveString(KEY_CUR_BOT, bot);
         botDB = new PropertyDB(bot);
+    }
+
+    public void saveLearning(Learning learning, LearningService.LearningResult learningResult) throws IOException {
+        saveWords(
+                learning.getCategory(),
+                learningResult.getWordsToTrain());
+        saveQuestions(
+                learning.getCategory(),
+                learningResult.getQuestionsToTrain());
     }
 
 }

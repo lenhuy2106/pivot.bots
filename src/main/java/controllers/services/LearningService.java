@@ -1,12 +1,12 @@
 package controllers.services;
 
+import database.Template;
 import edu.stanford.nlp.simple.Document;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import models.Learning;
-import database.Template;
 
 /**
  * Learning service abstraction.
