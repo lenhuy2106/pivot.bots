@@ -121,11 +121,9 @@ public class AppController {
                 : "";
 
         // there must be a user message
-        if (StringUtil.isBlank(text)) {
-            return Results.html()
-                    .render("session", session);
+        if (StringUtil.isNotBlank(text)) {
+            session.processMessage(text, skip);
         }
-        session.processMessage(text, skip);
 
         return Results.html()
                 .render("session", session);

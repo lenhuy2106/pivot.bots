@@ -26,6 +26,11 @@ public class LearningService {
     private static final String[] TAGS_VERB = {"VB", "VBD", "VBG", "VBN", "VBP", "VBZ"};
 
     /**
+     * to 'be' - sentences are not transformed.
+     */
+    private static final String VERB_BE = "be";
+
+    /**
      * words extracted.
      */
     private Map<String, Set<String>> words = new HashMap<>();
@@ -64,7 +69,7 @@ public class LearningService {
                 } // extract questions
                 else if (!seenBefore && Arrays.asList(TAGS_VERB).contains(sentence.posTag(i))) {
                     // no 'be' statements
-                    if (!sentence.lemma(i).equals("be")) {
+                    if (!sentence.lemma(i).equals(VERB_BE)) {
                         String question = String.format(Template.QUESTION_RETRIEVED,
                                 sentence.lemma(i),
                                 sentence.substring(i + 1, sentence.length() - 1));

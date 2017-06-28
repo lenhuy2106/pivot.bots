@@ -204,6 +204,7 @@ public class Session {
         Optional<String> nextCategory = categories.stream()
                 .skip((int) ((categories.size()) * Math.random()))
                 .findFirst();
+        currentCategory = nextCategory.orElse(null);
         messages.add(nextCategory.isPresent()
                 ? nextQuestion(nextCategory.get()).orElse(Template.NO_MORE_QUESTIONS)
                 : Template.NO_MORE_QUESTIONS);
@@ -221,23 +222,23 @@ public class Session {
     private Optional<String> nextQuestion(String category) {
         // random category
         Optional<String> nextQuestion;
-        AtomicInteger filtered = new AtomicInteger(0);
-        // retrieve question
-        if (RND.nextBoolean()) {
+        if (RND.nextBoolean() && !questions.get(category).isEmpty()) {
+            LOG.info("retrieve question.");
             Set<String> subquestions = questions.get(category);
             // prefiltered(questions left)
             nextQuestion = subquestions.stream()
-                    .skip((int) (questions.size() * Math.random()))
+                    .skip((int) (subquestions.size() * Math.random()))
                     .findFirst();
         }
-        // generate question
         else {
+            LOG.info("generate question.");
             Set<String> subwords = words.get(category);
             // filter-on-demand(all words)
-            String nextWord = subwords.stream()
+            Set<String> filtered = subwords.stream()
                     .filter(w -> !wordsUsed.keySet().contains(w))
-                    .peek(w -> filtered.incrementAndGet())
-                    .skip((int) (filtered.get() * Math.random()))
+                    .collect(Collectors.toSet());
+            String nextWord = filtered.stream()
+                    .skip((int) (filtered.size() * Math.random()))
                     .findFirst()
                     .orElse(category);
             nextQuestion = Optional.of(String.format(
@@ -274,14 +275,15 @@ public class Session {
                             case NEUTRAL:
                             default:
                         }
-                        dbService.saveWordsUsed(wordsUsed);
-                    } catch (IOException ex) {
+                    }
+                    catch (IOException ex) {
                         LOG.error("db access failed.", ex);
                     }
                     LOG.info("message sentiment: {} [{}]",
                             recognized,
                             sentence.sentiment());
                 });
+        dbService.saveWordsUsed(wordsUsed);
     }
 
     /**

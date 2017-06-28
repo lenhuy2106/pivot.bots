@@ -152,7 +152,7 @@ public class PropertyDB implements Database {
             return Optional.of(item.getFileName().substring(0, item.getFileName().length() - 3));
         }
         catch (IOException ex) {
-            LOG.error("Uploaded file is corrupted or already exists.", ex);
+            LOG.error("Uploaded file is corrupted or already exists.");
             return Optional.ofNullable(null);
         }
     }
