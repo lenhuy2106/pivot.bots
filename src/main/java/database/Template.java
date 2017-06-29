@@ -38,14 +38,21 @@ public class Template {
         "Tell me your opinion about %s please.",
     };
 
+    /**
+     * Bot greeting when accessing dialogue.
+     */
     public static final String FORM_GREETING = "Hello %s! I want to ask you some questions.";
 
+    /**
+     * Message, if there are no more questions retrievable or generatable.
+     * The statement may ask for further interaction nevertheless.
+     */
     public static final String NO_MORE_QUESTIONS = "Tell me more.";
 
     /**
      * Selects a template randomly.
-     * @param templates
-     * @return
+     * @param templates Template array to randomly access.
+     * @return random template.
      */
     public static String random(String[] templates) {
         return templates[RND.nextInt(templates.length)];

@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Controls state for the user's current session.
  * @author Nhu Huy Le <mail@huy-le.de>
  */
 public class Session {
