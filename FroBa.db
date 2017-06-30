@@ -1,0 +1,7 @@
+#database file
+#Fri Jun 30 14:43:02 CEST 2017
+words.Back-End=c++|role|software|data|developers|skills|operations|java|debugging|api|programming|c\#|means|databases|processes|languages|testing|services|core|system|application|integration|information|developer|logic|job
+categories=Back-End|Front-End
+questions.Front-End=Do you include the basic website design/layout, images, content, buttons, navigation and internal links?|Do you create the graphical user interface (GUI) that enables access to the softwares back-end features and capabilities?|Do you ensure that a website has the same visibility across different computing and mobile Web browsers?
+questions.Back-End=Do you have expert programming skills in C++, C\#, Java and other high-level programming languages?|Do you create and maintain the entire back-end of a system, which consists of the core application logic, databases, data and application integration, API and other back-end processes?|Do you perform the testing and debugging of any back-end application or system?|Do you develop and maintain the core functional logic and operations of a software application or information system?
+words.Front-End=css|logics|code|access|software|developers|js|interface|content|result|design/layout|features|navigation|computing|web|design|end|html|links|databases|website|images|processes|buttons|capabilities|business|visibility|softwares|programmer|browsers|javascript|structure|developer|websites|gui|front|job|user|errors|applications
