@@ -2,6 +2,7 @@
 
 PIVOT. Bots is a framework to create chatbot-based automatic assessments.
 ![alt assessment](http://i.imgur.com/a7JWbwd.png)
+
 The bots learn from domain-specific text you provide by extracting keywords and questions. 
 In the dialogue later, they evaluate users based on measuring associated sentiments in the answers given.
 
@@ -14,11 +15,13 @@ In the dialogue later, they evaluate users based on measuring associated sentime
 
 # Run
 You need [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (Win/Unix)  installed.
+
 Run the webapp (port 9000) with the standalone jar-file
 
     java -Dninja.port=9000 -Dninja.mode=test -jar pivot-bot-1.0.jar
 
 And call [http://localhost:9000](http://localhost:9000).
+
 To use a pre-trained bot, import the included **FroBa**.db file. It assesses your affinity to either backend or frontend dev.
 
 # Build from source
