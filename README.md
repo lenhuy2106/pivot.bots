@@ -20,6 +20,7 @@ Run the webapp (port 9000) with the standalone jar-file
 
 And call [http://localhost:9000](http://localhost:9000).
 To use a pre-trained bot, import the included **FroBa**.db file. It assesses your affinity to either backend or frontend dev.
+
 # Build from source
 You need [Apache Maven](https://maven.apache.org/download.cgi) (Win/Unix) installed.
 In the project directory, use
@@ -36,17 +37,19 @@ http://www.ninjaframework.org/documentation/deployment/ninja_standalone.html
 
 # Usage
 #### /settings
-![user](http://i.imgur.com/qgYE6No.png)
 First, create a new user and a new bot to identify your progress.
 You may export or import a *.db file to other systems.
+![user](http://i.imgur.com/qgYE6No.png)
+
 
 #### /learning
-![learning](http://i.imgur.com/cAuQ4t8.png)
+
 Let your bot learn domain-specific texts for question generation and sentiment analysis.
+![learning](http://i.imgur.com/cAuQ4t8.png)
 
 #### /dialogue
-![dialogue](http://i.imgur.com/RufOhrA.png)
 Speak to your bot. If you don't understand a question, it will be skipped and doesn't influence the assessment further.
 The more the bot learns, the more the right side resembles a brain. Teach him/her thoroughly!
+![dialogue](http://i.imgur.com/RufOhrA.png)
 
 # Now fly, you fools!
