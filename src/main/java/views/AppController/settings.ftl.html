@@ -19,7 +19,7 @@
                         </select>
                         <input id="userInput" class="form-control" type="text" name="userInput">
                         <p>Current: ${session.currentUser} </p>
-                        <a href="/assets/data/${session.currentUser}.db">Export</a>
+                        <a href="/${datapath}${session.currentUser}.db">Export</a>
                         | Import (*.db):<input class="form-control" type="file" name="upUser">
                     </td>
                 </tr>
@@ -38,7 +38,7 @@
                         </select>
                         <input id="botInput" class="form-control" type="text" name="botInput">
                         <p>Current: ${session.currentBot} </p>
-                        <a href="/assets/data/${session.currentBot}.db">Export</a>
+                        <a href="/${datapath}${session.currentBot}.db">Export</a>
                         | Import (*.db):<input id="upBot" class="form-control" type="file" name="upBot">
                     </td>
                 </tr>

@@ -5,20 +5,27 @@ import com.google.inject.Singleton;
 import controllers.services.DatabaseService;
 import controllers.services.LearningService;
 import controllers.services.LearningService.LearningResult;
+import database.Constants;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import models.Learning;
 import models.Message;
 import ninja.Context;
+import ninja.Renderable;
 import ninja.Result;
 import ninja.Results;
 import ninja.params.Param;
 import ninja.uploads.DiskFileItemProvider;
 import ninja.uploads.FileItem;
 import ninja.uploads.FileProvider;
+import ninja.utils.ResponseStreams;
 import org.eclipse.jetty.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,7 +214,38 @@ public class AppController {
         session.updateWith(upUser, upBot, changeUser, changeBot);
 
         return Results.html()
+                .render("datapath", Constants.DATA_PATH)
                 .render("session", session);
+    }
+
+    /**
+     * Serves exportable database files from the data directory.
+     *
+     * @return
+     */
+    public Result serveData() {
+        Renderable renderable = (Context context, Result result) -> {
+            String requestPath = context.getRequestPath();
+            LOG.info("Requesting {}", requestPath);
+            // remove trailing slash
+            File file = new File(requestPath.substring(1, requestPath.length()));
+            if (file.exists()) {
+                // downloadable headers
+                result.status(200);
+                result.contentType("text/plain");
+                result.addHeader("Content-Disposition", "attachment");
+                ResponseStreams responseStreams = context.finalizeHeadersWithoutFlashAndSessionCookie(result);
+                try (OutputStream os = responseStreams.getOutputStream()) {
+                    Files.copy(file.toPath(), os);
+                    os.flush();
+                }
+                catch (IOException ex) {
+                    LOG.error("data directory access failed.", ex);
+                    result.status(404);
+                }
+            }
+        };
+        return Results.ok().render(renderable);
     }
 
 }

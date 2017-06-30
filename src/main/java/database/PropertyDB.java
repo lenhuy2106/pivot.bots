@@ -41,7 +41,7 @@ public class PropertyDB implements Database {
         file = new File(DATA_PATH + name + ".db");
         if (!file.exists()) {
             file.getParentFile().mkdirs();
-            LOG.info("user database not found. Creating fresh...");
+            LOG.info("{} \n database not found. Creating fresh...", file.getAbsolutePath());
             file.createNewFile();
         }
     }

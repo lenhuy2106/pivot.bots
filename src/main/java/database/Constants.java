@@ -20,7 +20,7 @@ public final class Constants {
     /**
      * Path to application user and bot data.
      */
-    public static final String DATA_PATH = "src/main/java/assets/data/";
+    public static final String DATA_PATH = "data/";
     /**
      * Filename for the settings data file.
      */

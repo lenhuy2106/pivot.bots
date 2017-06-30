@@ -177,26 +177,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-module-junit4</artifactId>
-      <version>1.7.0</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>powermock-module-junit4-common</artifactId>
-          <groupId>org.powermock</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>hamcrest-core</artifactId>
-          <groupId>org.hamcrest</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>junit</artifactId>
-          <groupId>junit</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
   </dependencies>
   <properties>
     <ninja.version>6.0.0</ninja.version>

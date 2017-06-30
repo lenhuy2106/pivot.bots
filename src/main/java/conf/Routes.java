@@ -27,6 +27,7 @@ public class Routes implements ApplicationRoutes {
         router.GET().route("/analysis").with(AppController::analysis);
         router.GET().route("/settings").with(AppController::settings);
         router.POST().route("/settings").with(AppController::settings);
+        router.GET().route("/data/{fileName: .*}").with(AppController::serveData);
 
         // Assets (pictures / javascript)
         router.GET().route("/assets/webjars/{fileName: .*}").with(AssetsController::serveWebJars);
