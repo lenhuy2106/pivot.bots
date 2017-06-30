@@ -19,6 +19,7 @@ Run the webapp (port 9000) with the standalone jar-file
     java -Dninja.port=9000 -Dninja.mode=test -jar pivot-bot-1.0.jar
 
 And call [http://localhost:9000](http://localhost:9000).
+To use a pre-trained bot, import the included **FroBa**.db file. It assesses your affinity to either backend or frontend dev.
 # Build from source
 You need [Apache Maven](https://maven.apache.org/download.cgi) (Win/Unix) installed.
 In the project directory, use
